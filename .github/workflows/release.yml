@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag'
+        required: true
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout the code
+
+      - name: Unit tests
+        run: ./gradlew test
+
+  build:
+    name: Generate Debug APKs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Build APK
+        run: ./gradlew assembleBuild
+
+      - name: Create release and Upload APK
+        if: !${{ github.ref == 'refs/heads/main' }}
+        id: create_release
+        uses: svenstaro/upload-release-action@2.1.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          file: "${{ github.workspace }}/app/build/outputs/apk/fdroid/build/app-fdroid-build-unsigned.apk"
+          prerelease: false
+
+      - name: Upload APK
+          if: ${{ github.ref == 'refs/heads/main' }}
+          uses: actions/upload-artifact@v2
+          with:
+              name: App
+              path: "${{ github.workspace }}/app/build/outputs/apk/fdroid/build/app-fdroid-build-unsigned.apk"

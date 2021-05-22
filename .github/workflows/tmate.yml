@@ -1,11 +1,11 @@
-name: Custom Build
+name: TMate session
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build App
+    name: TMate session
     runs-on: ubuntu-latest
 
     steps:
